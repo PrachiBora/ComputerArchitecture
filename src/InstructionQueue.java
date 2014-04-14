@@ -26,9 +26,10 @@ class InstructionQueue {
 			}
 			
 			System.out.println("CLOCK CYCLE:" + Global.clockCycle);
-			
-			ins = Global.instruction.get(Global.PC++);
+			System.out.println(Global.PC);
+			ins = Global.instruction.get(Global.PC);
 			Global.queue.add(ins);
+			ins.fetch();
 			Global.clockCycle += 1;
 		}
 	}
