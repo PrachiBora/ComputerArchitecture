@@ -11,7 +11,7 @@ public class Global
 	static ArrayList<Instruction> instruction = new ArrayList<Instruction>();
 	static ArrayList<Register> register = new ArrayList<Register>();
 	static Queue<Instruction> queue = new ArrayDeque<Instruction>();
-	static int clockCycle;
+	static int clockCycle = 1;
 	static HashMap<String,Integer> stateCycle = new HashMap<String,Integer>();
 	static int PC;
 	static boolean flag = true;

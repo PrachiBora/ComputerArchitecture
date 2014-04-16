@@ -1,66 +1,77 @@
 class InstructionQueue {
-	
-	Instruction i = new Instruction();
 
+	Instruction iUse = new Instruction();
 	void parseAtEachClockCycle()
 	{
 		Instruction ins = null;
 		while(Global.flag)
 		{
-
 			int size = Global.queue.size();
 			while(size > 0)
 			{
-				System.out.println(Global.queue.peek().opcode);
 				Instruction inst = Global.queue.remove();
 				inst.cycle -= 1;
 				if(inst.cycle == 0){
+					if(inst.s == State.FT)
+						Global.functionalUnitStatus.put("Fetch",false);
+					else if(inst.s == State.IDT)
+						Global.functionalUnitStatus.put("Decode",false);
+					else if(inst.s == State.EXT)
+						Global.functionalUnitStatus.put("IntegerUnit",false);
+					else if(inst.s == State.WBT)
+						Global.functionalUnitStatus.put("WriteBack",false);
 					inst.s = inst.s.getNext();
+					parseInstruction(inst);	
 				}
-				//parseInstruction(inst);
-				Global.queue.add(inst);
-				System.out.println(inst.s);
-				
+				if(inst.s == null)
+					Global.queue.remove(inst);
+				else
+					Global.queue.add(inst);
 				size--;
-				
+
 			}
-			
-			System.out.println("CLOCK CYCLE:" + Global.clockCycle);
-			System.out.println(Global.PC);
-			ins = Global.instruction.get(Global.PC);
-			Global.queue.add(ins);
-			ins.fetch();
+			if (Global.PC == Global.instruction.size())
+				break;
+			else if(!( Global.functionalUnitStatus.get("Fetch"))) 
+			{
+				ins = Global.instruction.get(Global.PC);
+				parseInstruction(ins);
+				Global.queue.add(ins);
+			}
 			Global.clockCycle += 1;
 		}
+		System.out.println("Label\topcode\tOperands\tIF\tID\tEX\tWB" );
+		for(Instruction it : Global.instruction)
+			System.out.println(it);	
 	}
-	
+
 	void parseInstruction(Instruction ins)
 	{
 		if(ins != null)
 		{
 			if(ins.s == State.FT)
 			{
-				System.out.println("calling fetch");
 				ins.IF = Global.clockCycle;
-				ins.fetch();
+				if(!Global.functionalUnitStatus.get("Fetch"))
+					ins.fetch();
 			}
 			else if(ins.s == State.IDT)
 			{
-				System.out.println("calling decode");
 				ins.ID = Global.clockCycle;
-				ins.decode();
+				if(!Global.functionalUnitStatus.get("Decode"))
+					ins.decode();
 			}
 			else if(ins.s == State.EXT)
 			{
-				System.out.println("calling execute");
 				ins.EX = Global.clockCycle;
-				ins.execute();
+				if(!Global.functionalUnitStatus.get("IntegerUnit"))
+					ins.execute();
 			}
 			else
 			{
-				System.out.println("calling writeback");
 				ins.WB = Global.clockCycle;
-				ins.writeBack();
+				if(!Global.functionalUnitStatus.get("WriteBack"))
+					ins.writeBack();
 			}
 		}
 	}

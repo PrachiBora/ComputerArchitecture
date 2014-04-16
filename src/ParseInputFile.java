@@ -19,23 +19,30 @@ class ParseInputFile
 
 			while ((sCurrentLine = br.readLine()) != null)
 			{
-			Instruction ist = new Instruction();
+				Instruction ist = new Instruction();
 
-			String[] line = sCurrentLine.split("\\s");
-			ist.opcode = line[0];
-			if(ist.opcode.contains(":"))
-			{
-				String[] opcodes = ist.opcode.split(":");
-				ist.label = opcodes[0];
-				ist.opcode = opcodes[1];
+				String[] line = sCurrentLine.split("\\s");
+				ist.opcode = line[0];
+				if(ist.opcode.contains(":"))
+				{
+					String[] opcodes = ist.opcode.split(":");
+					ist.label = opcodes[0];
+					ist.opcode = opcodes[1];
 
-			}
-			String operands = line[1];
-			String[] operand = operands.split(",");
-			ist.operands = operand;
-			lds.functionalUnitForOpcode(ist.opcode);
-			Global.instruction.add(ist);
-
+				}
+				if(line.length > 1)
+				{
+					String operands = line[1];
+					if(operands != null)
+					{
+						String[] operand = operands.split(",");
+						ist.operands = operand;
+					}
+				}
+				else 
+					ist.operands = null;
+				lds.functionalUnitForOpcode(ist.opcode);
+				Global.instruction.add(ist);
 			}
 
 		} catch (IOException e) {

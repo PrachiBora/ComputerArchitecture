@@ -28,63 +28,67 @@ class Instruction {
 	void fetch(){
 		Global.PC += 1;
 		this.cycle = 5;
+		Global.functionalUnitStatus.put("Fetch", true);
 		if (opcode == "HLT")
 				Global.flag = false;
 	}
 	
 	void decode(){
+		Global.functionalUnitStatus.put("Decode", true);
 		this.cycle = 1;
 	}
 	
 	void execute(){
+		Global.functionalUnitStatus.put("IntegerUnit", true);
 		this.cycle = 2;
 	}
 	
 	void writeBack(){
+		Global.functionalUnitStatus.put("WriteBack", true);
 		this.cycle = 1;
 	}
 	
-	void fetchInstruction()
-	{
-		
-		Instruction prevInstr = null;
-		Instruction nextInstr = null;
-		for(int index = 0; index < Global.instruction.size() ; index ++)
-		{	
-			Instruction currInstr = Global.instruction.get(index);
-			
-			nextInstr = fetchNext(currInstr);
-			if(nextInstr != null)
-				index = Global.instruction.indexOf(nextInstr)-1;
-
-			if(prevInstr != null)
-				currInstr.ClockCycle = prevInstr.ID;
-			else
-				currInstr.ClockCycle = 1;
-
-			currInstr.IF = currInstr.ClockCycle ;
-			currInstr.ID = currInstr.ClockCycle + 5;
-			currInstr.ClockCycle += 5;
-			if(!(currInstr.opcode.equalsIgnoreCase("BNE")|| currInstr.opcode.equalsIgnoreCase("BEQ") || currInstr.opcode.equalsIgnoreCase("J")))
-			{
-				currInstr.EX = currInstr.ClockCycle + 1;
-				currInstr.ClockCycle += 1;
-				currInstr.WB = currInstr.ClockCycle + 6;
-				currInstr.ClockCycle += 6;
-			}
-			if ((index+1) == Global.instruction.size())
-				nextInstr = null;
-			else 
-			{
-				nextInstr = Global.instruction.get(index +1);
-				nextInstr.IF = currInstr.ClockCycle + 5;
-			}
-		
-			executeInstruction(currInstr);
-			prevInstr = currInstr;
-		}
-
-	}
+//	void fetchInstruction()
+//	{
+//		
+//		Instruction prevInstr = null;
+//		Instruction nextInstr = null;
+//		for(int index = 0; index < Global.instruction.size() ; index ++)
+//		{	
+//			Instruction currInstr = Global.instruction.get(index);
+//			
+//			nextInstr = fetchNext(currInstr);
+//			if(nextInstr != null)
+//				index = Global.instruction.indexOf(nextInstr)-1;
+//
+//			if(prevInstr != null)
+//				currInstr.ClockCycle = prevInstr.ID;
+//			else
+//				currInstr.ClockCycle = 1;
+//
+//			currInstr.IF = currInstr.ClockCycle ;
+//			currInstr.ID = currInstr.ClockCycle + 5;
+//			currInstr.ClockCycle += 5;
+//			if(!(currInstr.opcode.equalsIgnoreCase("BNE")|| currInstr.opcode.equalsIgnoreCase("BEQ") || currInstr.opcode.equalsIgnoreCase("J")))
+//			{
+//				currInstr.EX = currInstr.ClockCycle + 1;
+//				currInstr.ClockCycle += 1;
+//				currInstr.WB = currInstr.ClockCycle + 6;
+//				currInstr.ClockCycle += 6;
+//			}
+//			if ((index+1) == Global.instruction.size())
+//				nextInstr = null;
+//			else 
+//			{
+//				nextInstr = Global.instruction.get(index +1);
+//				nextInstr.IF = currInstr.ClockCycle + 5;
+//			}
+//		
+//			executeInstruction(currInstr);
+//			prevInstr = currInstr;
+//		}
+//
+//	}
 
 	Instruction fetchNext(Instruction currInstr)
 	{

@@ -26,10 +26,10 @@ public class myProject
 
 			ld.assignFunctionalUnitStatus();
 			ld.assignRegisterUnitStatus();
-			in.fetchInstruction();
-			System.out.println("Label\topcode\tOperands\tIF\tID\tEX\tWB" );
-			for(Instruction inst : Global.instruction)
-				System.out.println(inst);	
+//			in.fetchInstruction();
+//			System.out.println("Label\topcode\tOperands\tIF\tID\tEX\tWB" );
+//			for(Instruction inst : Global.instruction)
+//				System.out.println(inst);	
 
 			System.out.println("The functional units status are-");
 			System.out.println("*****************************");
