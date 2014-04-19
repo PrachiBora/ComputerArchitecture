@@ -35,6 +35,7 @@ class LoadDataStructures {
 		Global.functionalUnitStatus.put("Decode", false);
 		Global.functionalUnitStatus.put("Execute",false);
 		Global.functionalUnitStatus.put("WriteBack",false);
+		Global.functionalUnitStatus.put("None",false);
 	}
 	
 	void displayFunctionalUnitStatus()

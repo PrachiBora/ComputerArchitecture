@@ -51,44 +51,83 @@ class Instruction {
 
 	void fetch(){
 	//	Global.PC += 1;
-		this.cycle = 1;
 		Global.functionalUnitStatus.put("Fetch", true);
+		if(this.cycle > 0)
+			this.cycle -= 1;
 		if (opcode == "HLT")
 			Global.flag = false;
 	}
 
 	void decode(){
 		Global.functionalUnitStatus.put("Decode", true);
-		this.cycle = 1;
+		if(this.cycle > 0)
+			this.cycle -= 1;
+		
 	}
-
-//	void execute(){
-//		Global.functionalUnitStatus.put("IntegerUnit", true);
-//		this.cycle = 2;
-//	}
 
 	void writeBack(){
 		Global.functionalUnitStatus.put("WriteBack", true);
-		this.cycle = 1;
+		if(this.cycle > 0){
+			this.cycle -= 1;
+		}
 	}
 
 	State getNextIfFree(){
 		String key = null;
 		State next = this.s.getNext();
+//		System.out.println(this.s + " " + next);
+		
 		if (next == null)
+		{
+			this.WB = Global.clockCycle;
+//			System.out.println("in null");
 			return null;
-		if (next == State.FT)
+		}
+		else if (next.equals(State.FT))
 			key = "Fetch";
-		if (next == State.IDT)
+		else if (next.equals(State.IDT))
 			key = "Decode";
-		if (next == State.EXT)
+		else if (next.equals(State.EXT))
 			key = "IntegerUnit";
-		if (next == State.WBT)
+		else if (next.equals(State.WBT))
+		{
+//			System.out.print("in wB");
 			key = "WriteBack";
-		if (!Global.functionalUnitStatus.get(key))
+		}
+		if (this.cycle == 0  && !Global.functionalUnitStatus.get(key)){
+			Global.functionalUnitStatus.put(key, true);
+			if(this.s == State.FT)
+				this.IF = Global.clockCycle;
+			else if(this.s == State.IDT)
+				this.ID = Global.clockCycle;
+			else if(this.s == State.EXT)
+				this.EX = Global.clockCycle;
+			else if(this.s == State.WBT)
+			{
+				System.out.println("writing number of cycles to WB " + Global.clockCycle);
+				this.WB = Global.clockCycle;
+			}
+				
+			this.cycle = getCycles(next);
+//			System.out.println("cycle is *************" + this.cycle);
 			return next;
+		}
 		else
 			return this.s;
+		
+	}
+	
+	int getCycles(State s){
+		if(s.equals(State.FT))
+			return 3;
+		if (s.equals(State.EXT))
+		{
+			return 2;
+		}
+		else if (s.equals(State.WBT))
+			return 1;
+		else
+			return 1;
 	}
 	
 	Instruction fetchNext(Instruction currInstr)
@@ -170,9 +209,11 @@ class Instruction {
 	void execute()
 	{
 		
-		Global.functionalUnitStatus.put("IntegerUnit", true);
-		this.cycle = 2;
-	
+//		Global.functionalUnitStatus.put("IntegerUnit", true);
+		if(this.cycle > 0){
+			System.out.println("%%%%%%%%%%%%%%%%%" + this.cycle);
+			this.cycle -= 1;
+		}	
 
 		if(this.opcode.equalsIgnoreCase("DADD") || this.opcode.equalsIgnoreCase("ADD"))
 		{		
