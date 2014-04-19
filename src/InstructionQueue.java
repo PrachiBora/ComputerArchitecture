@@ -3,32 +3,31 @@ class InstructionQueue {
 	Instruction iUse = new Instruction();
 	void parseAtEachClockCycle()
 	{
-		Instruction ins = null;
-		while(Global.flag)
+		Instruction ins = Global.instruction.get(0);
+		Instruction copyIns = copyInstruction(ins);
+		Global.queue.add(copyIns);
+		Global.functionalUnitStatus.put("Fetch",true);
+		while(!Global.queue.isEmpty())
 		{
 			int size = Global.queue.size();
 			while(size > 0)
 			{
 				Instruction inst = Global.queue.remove();
 				
-				//				inst.cycle -= 1;
 				parseInstruction(inst);
-				System.out.println("-----> " + inst.opcode + inst.operands[0] + " " + inst.s + " " + inst.cycle);
+
 				if(inst.cycle == 0){
-//					System.out.println("-----> " + inst.opcode + inst.operands[0] + " " + inst.s);
+
 					if(inst.s == State.FT)
 						Global.functionalUnitStatus.put("Fetch",false);
 					else if(inst.s == State.IDT)
 						Global.functionalUnitStatus.put("Decode",false);
 					else if(inst.s == State.EXT)
 						Global.functionalUnitStatus.put("IntegerUnit",false);
-					else if(inst.s == State.WBT){
-						System.out.println("free write back");
+					else if(inst.s == State.WBT)
 						Global.functionalUnitStatus.put("WriteBack",false);
-						
-					}
+
 					inst.s = inst.getNextIfFree();
-					System.out.println("------->>>>> " + inst.s);
 				}
 				if(inst.s == null)
 					Global.result.add(inst);
@@ -36,15 +35,12 @@ class InstructionQueue {
 					Global.queue.add(inst);
 				size--;
 			}
-			System.out.println("outer while");
 			if(!( Global.functionalUnitStatus.get("Fetch"))) 
 			{
 				ins = iUse.fetchNext(ins);
-				Instruction copyIns = copyInstruction(ins);
-
-				if(copyIns == null)
-					break;
-				else{
+				copyIns = copyInstruction(ins);
+				if(copyIns != null)
+				{
 					System.out.println(copyIns.opcode + " " + copyIns.operands[0] + " " + Global.clockCycle);
 					Global.queue.add(copyIns);
 				}

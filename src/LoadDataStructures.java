@@ -63,11 +63,11 @@ class LoadDataStructures {
 		if(opcode.equalsIgnoreCase("LW") || opcode.equalsIgnoreCase("SW") || opcode.equalsIgnoreCase("L.D") || opcode.equalsIgnoreCase("S.D") || opcode.equalsIgnoreCase("DADD") || opcode.equalsIgnoreCase("DADDI") || opcode.equalsIgnoreCase("DSUB") || opcode.equalsIgnoreCase("DSUBI") || opcode.equalsIgnoreCase("AND")|| opcode.equalsIgnoreCase("ANDI") || opcode.equalsIgnoreCase("OR") || opcode.equalsIgnoreCase("ORI"))
 			Global.opcodeFunctionalUnit.put(opcode,"IntegerUnit");
 		else if(opcode.equalsIgnoreCase("ADD.D") || opcode.equalsIgnoreCase("SUB.D"))
-			Global.opcodeFunctionalUnit.put(opcode,"FPAdder");
+			Global.opcodeFunctionalUnit.put(opcode,"FP adder");
 		else if(opcode.equalsIgnoreCase("MUL.D"))
-			Global.opcodeFunctionalUnit.put(opcode,"FPMult");
+			Global.opcodeFunctionalUnit.put(opcode,"FP Multiplier");
 		else if(opcode.equalsIgnoreCase("DIV.D"))
-			Global.opcodeFunctionalUnit.put(opcode,"FPDivision");
+			Global.opcodeFunctionalUnit.put(opcode,"FP divider");
 	}
 
 	void displayOpcodeFunctionalUnit()

@@ -50,7 +50,6 @@ class Instruction {
 	}		
 
 	void fetch(){
-	//	Global.PC += 1;
 		Global.functionalUnitStatus.put("Fetch", true);
 		if(this.cycle > 0)
 			this.cycle -= 1;
@@ -75,12 +74,10 @@ class Instruction {
 	State getNextIfFree(){
 		String key = null;
 		State next = this.s.getNext();
-//		System.out.println(this.s + " " + next);
 		
 		if (next == null)
 		{
 			this.WB = Global.clockCycle;
-//			System.out.println("in null");
 			return null;
 		}
 		else if (next.equals(State.FT))
@@ -90,12 +87,11 @@ class Instruction {
 		else if (next.equals(State.EXT))
 			key = "IntegerUnit";
 		else if (next.equals(State.WBT))
-		{
-//			System.out.print("in wB");
 			key = "WriteBack";
-		}
+
 		if (this.cycle == 0  && !Global.functionalUnitStatus.get(key)){
 			Global.functionalUnitStatus.put(key, true);
+		
 			if(this.s == State.FT)
 				this.IF = Global.clockCycle;
 			else if(this.s == State.IDT)
@@ -103,13 +99,9 @@ class Instruction {
 			else if(this.s == State.EXT)
 				this.EX = Global.clockCycle;
 			else if(this.s == State.WBT)
-			{
-				System.out.println("writing number of cycles to WB " + Global.clockCycle);
 				this.WB = Global.clockCycle;
-			}
-				
+		
 			this.cycle = getCycles(next);
-//			System.out.println("cycle is *************" + this.cycle);
 			return next;
 		}
 		else
@@ -117,11 +109,14 @@ class Instruction {
 		
 	}
 	
+	
 	int getCycles(State s){
-		if(s.equals(State.FT))
-			return 3;
+		if(s == State.FT)
+			return 1;
 		if (s.equals(State.EXT))
 		{
+		//	int numOfCycles = checkExecuteUnit(itr);
+			//return numOfCycles;
 			return 2;
 		}
 		else if (s.equals(State.WBT))
@@ -133,8 +128,8 @@ class Instruction {
 	Instruction fetchNext(Instruction currInstr)
 	{
 
-		if(currInstr == null)
-			return Global.instruction.get(0);
+		if(currInstr == null )
+			return null;
 		
 		Instruction nextInstr = null;
 

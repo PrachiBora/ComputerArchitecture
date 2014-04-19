@@ -75,6 +75,7 @@ class ParseInputFile
 				System.out.println(lines[0] + " " + cycle);
 				Global.functionalUnitCycle.put(lines[0],cycle);
 			}
+			Global.functionalUnitCycle.put("IntegerUnit", 2);
 		}
 		catch(IOException e)
 		{
