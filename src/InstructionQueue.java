@@ -12,66 +12,95 @@ class InstructionQueue {
 				Instruction inst = Global.queue.remove();
 				inst.cycle -= 1;
 				if(inst.cycle == 0){
+					
 					if(inst.s == State.FT)
 						Global.functionalUnitStatus.put("Fetch",false);
 					else if(inst.s == State.IDT)
 						Global.functionalUnitStatus.put("Decode",false);
 					else if(inst.s == State.EXT)
 						Global.functionalUnitStatus.put("IntegerUnit",false);
-					else if(inst.s == State.WBT)
+					else if(inst.s == State.WBT){
 						Global.functionalUnitStatus.put("WriteBack",false);
-					inst.s = inst.s.getNext();
-					parseInstruction(inst);	
+//						System.out.println(inst.opcode);
+					}
+					inst.s = inst.getNextIfFree();
+					parseInstruction(inst);
 				}
 				if(inst.s == null)
-					Global.queue.remove(inst);
+				{
+//					System.out.println("insss" + inst.opcode + inst.operands[0] + " "+ Global.clockCycle);
+					Global.result.add(inst);
+				}
 				else
 					Global.queue.add(inst);
 				size--;
 
 			}
-			if (Global.PC == Global.instruction.size())
-				break;
-			else if(!( Global.functionalUnitStatus.get("Fetch"))) 
+			if(!( Global.functionalUnitStatus.get("Fetch"))) 
 			{
-				ins = Global.instruction.get(Global.PC);
-				parseInstruction(ins);
-				Global.queue.add(ins);
+				ins = iUse.fetchNext(ins);
+				Instruction copyIns = copyInstruction(ins);
+				parseInstruction(copyIns);
+
+				if(copyIns == null)
+					break;
+				else{
+//					System.out.println(copyIns.opcode + " " + copyIns.operands[0] + " " + Global.clockCycle);
+//					copyIns.fetch();
+					Global.queue.add(copyIns);
+				}
 			}
 			Global.clockCycle += 1;
 		}
+		
 		System.out.println("Label\topcode\tOperands\tIF\tID\tEX\tWB" );
-		for(Instruction it : Global.instruction)
+		for(Instruction it : Global.result)
 			System.out.println(it);	
 	}
 
+	Instruction copyInstruction(Instruction curr)
+	{
+		if(curr != null)
+		{
+			Instruction copyInstr = new Instruction(curr);
+			return copyInstr;
+		}
+		return null;
+	}
 	void parseInstruction(Instruction ins)
 	{
+//		System.out.println("insss->" + ins.opcode + " " + ins.operands[0] + " " + ins.s + " " + Global.clockCycle);
 		if(ins != null)
 		{
 			if(ins.s == State.FT)
 			{
-				ins.IF = Global.clockCycle;
 				if(!Global.functionalUnitStatus.get("Fetch"))
 					ins.fetch();
 			}
 			else if(ins.s == State.IDT)
 			{
-				ins.ID = Global.clockCycle;
+				ins.IF = Global.clockCycle;
+				
 				if(!Global.functionalUnitStatus.get("Decode"))
 					ins.decode();
 			}
 			else if(ins.s == State.EXT)
 			{
-				ins.EX = Global.clockCycle;
+				ins.ID = Global.clockCycle;
+				
 				if(!Global.functionalUnitStatus.get("IntegerUnit"))
 					ins.execute();
 			}
-			else
+			else if(ins.s == State.WBT)
 			{
-				ins.WB = Global.clockCycle;
+				ins.EX = Global.clockCycle;
+				
 				if(!Global.functionalUnitStatus.get("WriteBack"))
 					ins.writeBack();
+			}
+			else {
+				ins.WB = Global.clockCycle;
+				
 			}
 		}
 	}

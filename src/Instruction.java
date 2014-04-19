@@ -1,5 +1,4 @@
 import java.util.Arrays;
-import java.util.HashMap;
 
 class Instruction {
 
@@ -11,106 +10,110 @@ class Instruction {
 	int EX;
 	int WB;
 	int[] states;
-	int RAW;
-	int WAR;
-	int WAW;
-	int StructHazard;
-	int ClockCycle;
-	//String state;
+	char RAW = 'N';
+	char WAR = 'N';
+	char WAW = 'N';
+	char StructHazard;
 	State s = State.FT;
 	int cycle;
+
+	public Instruction()
+	{
+		this.IF = 0;
+		this.ID = 0;
+		this.EX = 0;
+		this.WB = 0;
+		this.RAW = 'N';
+		this.WAR = 'N';
+		this.StructHazard = 'N';
+		this.s = State.FT;
+		
+	}
 	
+	public Instruction(Instruction instr) {
+		this.label = instr.label;
+		this.opcode = instr.opcode;
+		this.operands = instr.operands;
+		this.IF = 0;
+		this.ID = 0;
+		this.EX = 0;
+		this.WB = 0;
+		this.RAW = 'N';
+		this.WAR = 'N';
+		this.StructHazard = 'N';
+		this.s = State.FT;
+		this.cycle = 1;
+	}
 	public String toString()
 	{
-		return (this.label + "\t" + this.opcode  + "\t" + Arrays.asList(operands) + "\t" + this.IF + "\t" + this.ID + "\t" + this.EX + "\t" + this.WB);
+		return (this.label + "\t" + this.opcode  + "\t" + Arrays.asList(operands) + "\t" + this.IF + "\t" + this.ID + "\t" + this.EX + "\t" + this.WB + "\t" + this.s);
 	}		
 
 	void fetch(){
-		Global.PC += 1;
-		this.cycle = 5;
+	//	Global.PC += 1;
+		this.cycle = 1;
 		Global.functionalUnitStatus.put("Fetch", true);
 		if (opcode == "HLT")
-				Global.flag = false;
+			Global.flag = false;
 	}
-	
+
 	void decode(){
 		Global.functionalUnitStatus.put("Decode", true);
 		this.cycle = 1;
 	}
-	
-	void execute(){
-		Global.functionalUnitStatus.put("IntegerUnit", true);
-		this.cycle = 2;
-	}
-	
+
+//	void execute(){
+//		Global.functionalUnitStatus.put("IntegerUnit", true);
+//		this.cycle = 2;
+//	}
+
 	void writeBack(){
 		Global.functionalUnitStatus.put("WriteBack", true);
 		this.cycle = 1;
 	}
-	
-//	void fetchInstruction()
-//	{
-//		
-//		Instruction prevInstr = null;
-//		Instruction nextInstr = null;
-//		for(int index = 0; index < Global.instruction.size() ; index ++)
-//		{	
-//			Instruction currInstr = Global.instruction.get(index);
-//			
-//			nextInstr = fetchNext(currInstr);
-//			if(nextInstr != null)
-//				index = Global.instruction.indexOf(nextInstr)-1;
-//
-//			if(prevInstr != null)
-//				currInstr.ClockCycle = prevInstr.ID;
-//			else
-//				currInstr.ClockCycle = 1;
-//
-//			currInstr.IF = currInstr.ClockCycle ;
-//			currInstr.ID = currInstr.ClockCycle + 5;
-//			currInstr.ClockCycle += 5;
-//			if(!(currInstr.opcode.equalsIgnoreCase("BNE")|| currInstr.opcode.equalsIgnoreCase("BEQ") || currInstr.opcode.equalsIgnoreCase("J")))
-//			{
-//				currInstr.EX = currInstr.ClockCycle + 1;
-//				currInstr.ClockCycle += 1;
-//				currInstr.WB = currInstr.ClockCycle + 6;
-//				currInstr.ClockCycle += 6;
-//			}
-//			if ((index+1) == Global.instruction.size())
-//				nextInstr = null;
-//			else 
-//			{
-//				nextInstr = Global.instruction.get(index +1);
-//				nextInstr.IF = currInstr.ClockCycle + 5;
-//			}
-//		
-//			executeInstruction(currInstr);
-//			prevInstr = currInstr;
-//		}
-//
-//	}
 
+	State getNextIfFree(){
+		String key = null;
+		State next = this.s.getNext();
+		if (next == null)
+			return null;
+		if (next == State.FT)
+			key = "Fetch";
+		if (next == State.IDT)
+			key = "Decode";
+		if (next == State.EXT)
+			key = "IntegerUnit";
+		if (next == State.WBT)
+			key = "WriteBack";
+		if (!Global.functionalUnitStatus.get(key))
+			return next;
+		else
+			return this.s;
+	}
+	
 	Instruction fetchNext(Instruction currInstr)
 	{
 
 		if(currInstr == null)
 			return Global.instruction.get(0);
+		
 		Instruction nextInstr = null;
 
 		if(currInstr.opcode.equalsIgnoreCase("BNE"))
 		{
+			System.out.println("in BNE ");
 			if(Global.RegisterValuePair.get(currInstr.operands[0]) == Global.RegisterValuePair.get(currInstr.operands[1]))
 			{
+				System.out.println("in BNE if ");
 				if(Global.instruction.indexOf(currInstr)+1 == Global.instruction.size())
-				{
-					System.out.println("in if");
 					return null;
-				}
 				else
 					return Global.instruction.get(Global.instruction.indexOf(currInstr)+1);
 			}	
 			else 
 			{
+				System.out.println("in BNE else ");
+				System.out.println(Global.RegisterValuePair.get(currInstr.operands[0]) + " " + Global.RegisterValuePair.get(currInstr.operands[1]));
 				for(Instruction inst : Global.instruction)
 				{
 					if(inst.label != null && inst.label.equals(currInstr.operands[currInstr.operands.length - 1]))
@@ -164,109 +167,69 @@ class Instruction {
 		return null;
 	}
 
-	void testFetch()
+	void execute()
 	{
-		Instruction nextInstr = null;
-		nextInstr = fetchNext(Global.instruction.get(10));
-		if(nextInstr == null)
-			System.out.println("null");
-		else
-			System.out.println("next instr is " + nextInstr);
+		
+		Global.functionalUnitStatus.put("IntegerUnit", true);
+		this.cycle = 2;
+	
 
-	}
-
-	void executeInstruction(Instruction inst)
-	{
-		int i = Global.instruction.indexOf(inst);
-
-		if(Global.instruction.get(i).opcode.equalsIgnoreCase("DADD") || Global.instruction.get(i).opcode.equalsIgnoreCase("ADD"))
-		{
-			if(!Global.functionalUnitStatus.get(Global.opcodeFunctionalUnit.get(Global.instruction.get(i).opcode)))
-			{
-				Global.functionalUnitStatus.put(Global.opcodeFunctionalUnit.get(Global.instruction.get(i).opcode),true);
-				String reg2 = Global.instruction.get(i).operands[2];
-				String reg1 = Global.instruction.get(i).operands[1];
-				int reg1Value = Global.RegisterValuePair.get(reg1);
-				int reg2Value = Global.RegisterValuePair.get(reg2);
-				int destValue = reg1Value + reg2Value;
-				String dest = Global.instruction.get(i).operands[0];
-				Global.RegisterValuePair.put(dest, destValue);
-				Global.functionalUnitStatus.put(Global.opcodeFunctionalUnit.get(Global.instruction.get(i).opcode),false);
-			}
+		if(this.opcode.equalsIgnoreCase("DADD") || this.opcode.equalsIgnoreCase("ADD"))
+		{		
+			String reg2 = this.operands[2];
+			String reg1 = this.operands[1];
+			int reg1Value = Global.RegisterValuePair.get(reg1);
+			int reg2Value = Global.RegisterValuePair.get(reg2);
+			int destValue = reg1Value + reg2Value;
+			String dest = this.operands[0];
+			Global.RegisterValuePair.put(dest, destValue);
 		}
-		else if(Global.instruction.get(i).opcode.equalsIgnoreCase("DADDI"))
+		else if(this.opcode.equalsIgnoreCase("DADDI"))
 		{ 
-			if(!Global.functionalUnitStatus.get(Global.opcodeFunctionalUnit.get(Global.instruction.get(i).opcode)))
-			{
-
-				Global.functionalUnitStatus.put(Global.opcodeFunctionalUnit.get(Global.instruction.get(i).opcode),true);
-				String imm = Global.instruction.get(i).operands[2];
-				String reg = Global.instruction.get(i).operands[1];
-				int regValue = Global.RegisterValuePair.get(reg);
-				int destValue = regValue + Integer.parseInt(imm);
-				String dest = Global.instruction.get(i).operands[0];
-				Global.RegisterValuePair.put(dest, destValue);
-				Global.functionalUnitStatus.put(Global.opcodeFunctionalUnit.get(Global.instruction.get(i).opcode),false);
-			}
+			String imm = this.operands[2];
+			String reg = this.operands[1];
+			int regValue = Global.RegisterValuePair.get(reg);
+			int destValue = regValue + Integer.parseInt(imm);
+			String dest = this.operands[0];
+			Global.RegisterValuePair.put(dest, destValue);
 		}
-		else if(Global.instruction.get(i).opcode.equalsIgnoreCase("DSUB") || Global.instruction.get(i).opcode.equalsIgnoreCase("SUB"))
+		else if(this.opcode.equalsIgnoreCase("DSUB") || this.opcode.equalsIgnoreCase("SUB"))
 		{
-			if(!Global.functionalUnitStatus.get(Global.opcodeFunctionalUnit.get(Global.instruction.get(i).opcode)))
-			{
-				Global.functionalUnitStatus.put(Global.opcodeFunctionalUnit.get(Global.instruction.get(i).opcode),true);
-				String reg2 = Global.instruction.get(i).operands[2];
-				String reg1 = Global.instruction.get(i).operands[1];
-				int reg1Value = Global.RegisterValuePair.get(reg1);
-				int reg2Value = Global.RegisterValuePair.get(reg2);
-				int destValue = reg1Value + reg2Value;
-				String dest = Global.instruction.get(i).operands[0];
-				Global.RegisterValuePair.put(dest, destValue);
-				Global.functionalUnitStatus.put(Global.opcodeFunctionalUnit.get(Global.instruction.get(i).opcode),false);
-			}
-		}
-		else if(Global.instruction.get(i).opcode.equalsIgnoreCase("DSUBI"))
+			String reg2 = this.operands[2];
+			String reg1 = this.operands[1];
+			int reg1Value = Global.RegisterValuePair.get(reg1);
+			int reg2Value = Global.RegisterValuePair.get(reg2);
+			int destValue = reg1Value + reg2Value;
+			String dest = this.operands[0];
+			Global.RegisterValuePair.put(dest, destValue);
+				}
+		else if(this.opcode.equalsIgnoreCase("DSUBI"))
 		{ 
-			if(Global.functionalUnitStatus.get(Global.opcodeFunctionalUnit.get(Global.instruction.get(i).opcode))== false)
-			{
-
-				Global.functionalUnitStatus.put(Global.opcodeFunctionalUnit.get(Global.instruction.get(i).opcode),true);
-				String imm = Global.instruction.get(i).operands[2];
-				String reg = Global.instruction.get(i).operands[1];
-				int regValue = Global.RegisterValuePair.get(reg);
-				int destValue = regValue - Integer.parseInt(imm);
-				String dest = Global.instruction.get(i).operands[0];
-				Global.RegisterValuePair.put(dest, destValue);
-				Global.functionalUnitStatus.put(Global.opcodeFunctionalUnit.get(Global.instruction.get(i).opcode),false);
-			}
+			System.out.println("*****************in DSUBI************");
+			String imm = this.operands[2];
+			String reg = this.operands[1];
+			int regValue = Global.RegisterValuePair.get(reg);
+			int destValue = regValue - Integer.parseInt(imm);
+			String dest = this.operands[0];
+			Global.RegisterValuePair.put(dest, destValue);
 		}
-		else if(Global.instruction.get(i).opcode.equalsIgnoreCase("ANDI"))
+		else if(this.opcode.equalsIgnoreCase("ANDI"))
 		{
-			if(!Global.functionalUnitStatus.get(Global.opcodeFunctionalUnit.get(Global.instruction.get(i).opcode)))
-			{
-				Global.functionalUnitStatus.put(Global.opcodeFunctionalUnit.get(Global.instruction.get(i).opcode),true);
-				String imm = Global.instruction.get(i).operands[2];
-				String reg = Global.instruction.get(i).operands[1];
-				int regValue = Global.RegisterValuePair.get(reg);
-				int destValue = regValue & Integer.parseInt(imm);
-				String dest = Global.instruction.get(i).operands[0];
-				Global.RegisterValuePair.put(dest, destValue);
-				Global.functionalUnitStatus.put(Global.opcodeFunctionalUnit.get(Global.instruction.get(i).opcode),false);
-			}
-
+			String imm = this.operands[2];
+			String reg = this.operands[1];
+			int regValue = Global.RegisterValuePair.get(reg);
+			int destValue = regValue & Integer.parseInt(imm);
+			String dest = this.operands[0];
+			Global.RegisterValuePair.put(dest, destValue);
 		}
-		else if(Global.instruction.get(i).opcode.equalsIgnoreCase("ORI"))
+		else if(this.opcode.equalsIgnoreCase("ORI"))
 		{
-			if(!Global.functionalUnitStatus.get(Global.opcodeFunctionalUnit.get(Global.instruction.get(i).opcode)))
-			{
-				Global.functionalUnitStatus.put(Global.opcodeFunctionalUnit.get(Global.instruction.get(i).opcode),true);
-				String imm = Global.instruction.get(i).operands[2];
-				String reg = Global.instruction.get(i).operands[1];
-				int regValue = Global.RegisterValuePair.get(reg);
-				int destValue = regValue | Integer.parseInt(imm);
-				String dest = Global.instruction.get(i).operands[0];
-				Global.RegisterValuePair.put(dest, destValue);
-			}
-
+			String imm = this.operands[2];
+			String reg = this.operands[1];
+			int regValue = Global.RegisterValuePair.get(reg);
+			int destValue = regValue | Integer.parseInt(imm);
+			String dest = this.operands[0];
+			Global.RegisterValuePair.put(dest, destValue);
 		}
 	}
 }

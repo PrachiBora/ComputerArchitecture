@@ -46,6 +46,12 @@ class LoadDataStructures {
 
 	}
 
+	void displayFunctionalUnitsCycle()
+	{
+		Set<String> keys = Global.functionalUnitCycle.keySet();
+		for(String k: keys)
+			System.out.println("Value of " + k +" is: "+ Global.functionalUnitCycle.get(k));
+	}
 	void loadStateCycle()
 	{
 		Global.stateCycle.put("IF", 5);

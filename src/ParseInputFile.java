@@ -56,6 +56,43 @@ class ParseInputFile
 		}
 	}
 
+	void readConfig(String configFile)
+	{
+		BufferedReader b = null;
+		try
+		{
+			String line;
+			b = new BufferedReader(new FileReader(configFile));
+			int i = 0;
+			while((line = b.readLine()) != null)
+			{
+				if(line.equals(null))
+					break;
+				String[] lines = line.split(":");
+				Global.functionalUnitStatus.put(lines[0],false);
+				String[] line2 = lines[1].split(",");
+				Integer cycle = Integer.parseInt(line2[0].trim());
+				System.out.println(lines[0] + " " + cycle);
+				Global.functionalUnitCycle.put(lines[0],cycle);
+			}
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			try
+			{
+				if(b != null)
+					b.close();
+			}
+			catch(IOException ex)
+			{
+				ex.printStackTrace();
+			}
+		}
+	}
 	void loadRegisters(String regFile)
 	{  
 		BufferedReader b = null;

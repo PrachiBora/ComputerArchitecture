@@ -15,5 +15,7 @@ public class Global
 	static HashMap<String,Integer> stateCycle = new HashMap<String,Integer>();
 	static int PC;
 	static boolean flag = true;
+	static ArrayList<Instruction> result = new ArrayList<Instruction>();
+	static HashMap<String,Integer> functionalUnitCycle = new HashMap<String,Integer>(); 
 	
 }
