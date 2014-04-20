@@ -17,36 +17,8 @@ class InstructionQueue {
 			while(size > 0)
 			{
 				Instruction inst = Global.queue.remove();
-				
 				parseInstruction(inst);
-
-				if(inst.cycle == 0){
-					if(inst.s == State.FT)
-						Global.functionalUnitStatus.put("Fetch",false);
-					else if(inst.s == State.IDT){
-						Global.functionalUnitStatus.put("Decode",false);
-						if (inst.opcode.equalsIgnoreCase("HLT") || inst.opcode.equalsIgnoreCase("BEQ") ||inst.opcode.equalsIgnoreCase("BNE") || inst.opcode.equalsIgnoreCase("J")){
-							inst.ID = Global.clockCycle;
-							isTermInst = true;
-							inst.s = null;
-						}
-					}	
-						
-					else if(inst.s == State.EXT)
-					{	
-						Global.functionalUnitStatus.put(Global.opcodeFunctionalUnit.get(inst.opcode),false);
-					}
-					else if(inst.s == State.WBT)
-						Global.functionalUnitStatus.put("WriteBack",false);
-
-					if(!isTermInst)
-						inst.s = inst.getNextIfFree();
-					isTermInst = false;
-					
-					
-					
-					
-				}
+				inst.s = inst.getNextIfFree();
 				if(inst.s == null)
 					Global.result.add(inst);
 				else
@@ -59,7 +31,7 @@ class InstructionQueue {
 				copyIns = copyInstruction(ins);
 				if(copyIns != null)
 				{
-				//	System.out.println(copyIns.opcode + " " + copyIns.operands[0] + " " + Global.clockCycle);
+					//	System.out.println(copyIns.opcode + " " + copyIns.operands[0] + " " + Global.clockCycle);
 					Global.queue.add(copyIns);
 				}
 			}
@@ -94,40 +66,40 @@ class InstructionQueue {
 		{
 			if(ins.s == State.FT)
 			{
-//				if(!Global.functionalUnitStatus.get("Fetch"))
-					ins.fetch();
+				//				if(!Global.functionalUnitStatus.get("Fetch"))
+				ins.fetch();
 			}
 			else if(ins.s == State.IDT)
 			{
 
-//				if(!Global.functionalUnitStatus.get("Decode"))
+				//				if(!Global.functionalUnitStatus.get("Decode"))
 				{
-//					ins.IF = Global.clockCycle;
+					//					ins.IF = Global.clockCycle;
 					ins.decode();
 				}
 			}
 			else if(ins.s == State.EXT)
 			{
-//				if(!Global.functionalUnitStatus.get("IntegerUnit"))
-//				{
-//					ins.ID = Global.clockCycle;
-					ins.execute();
-//				}
+				//				if(!Global.functionalUnitStatus.get("IntegerUnit"))
+				//				{
+				//					ins.ID = Global.clockCycle;
+				ins.execute();
+				//				}
 
 			}
 			else if(ins.s == State.WBT)
 			{
-				
-//				if(!Global.functionalUnitStatus.get("WriteBack"))
+
+				//				if(!Global.functionalUnitStatus.get("WriteBack"))
 				{
-//					System.out.println("&&&&&&&&&&&&&");
-//					ins.EX = Global.clockCycle;
+					//					System.out.println("&&&&&&&&&&&&&");
+					//					ins.EX = Global.clockCycle;
 					ins.writeBack();
 				}
-					
+
 			}
 			else {
-//				ins.WB = Global.clockCycle;
+				//				ins.WB = Global.clockCycle;
 
 			}
 		}

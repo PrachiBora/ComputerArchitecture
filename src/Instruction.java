@@ -79,7 +79,7 @@ class Instruction {
 
 		if (next == null)
 		{
-	//		Global.functionalUnitStatus.put("WriteBack",false);
+			Global.functionalUnitStatus.put("WriteBack",false);
 			this.WB = Global.clockCycle;
 			return null;
 		}
@@ -88,13 +88,21 @@ class Instruction {
 		else if (next.equals(State.IDT))
 			key = "Decode";
 		else if (next.equals(State.EXT))
+		{
+			if (this.opcode.equalsIgnoreCase("HLT") || this.opcode.equalsIgnoreCase("BEQ") ||this.opcode.equalsIgnoreCase("BNE") || this.opcode.equalsIgnoreCase("J")){
+				this.ID = Global.clockCycle;
+				Global.functionalUnitStatus.put("Decode", false);
+				return null;
+			}
 			key = getKey(this);
+
+		}
 		else if (next.equals(State.WBT))
 			key = "WriteBack";
-	
+
 		if (this.cycle == 0 && !(Global.functionalUnitStatus.get(key))){
-//			String FU = getCurrentFunctionalUnit();
-//			Global.functionalUnitStatus.put(FU, false);
+			String FU = getCurrentFunctionalUnit();
+			Global.functionalUnitStatus.put(FU, false);
 			Global.functionalUnitStatus.put(key, true);
 
 			if(this.s == State.FT)
@@ -118,7 +126,7 @@ class Instruction {
 	String getCurrentFunctionalUnit()
 	{
 		if(this.s == State.FT)
-				return "Fetch" ;
+			return "Fetch" ;
 		else if (this.s == State.IDT)
 			return "Decode";
 		else if (this.s == State.EXT)
@@ -129,12 +137,11 @@ class Instruction {
 	{
 		System.out.println(itr.opcode);
 		String key = Global.opcodeFunctionalUnit.get(itr.opcode);
-		
 		return key;
 	}
 	int checkExecuteUnit(Instruction itr)
 	{
-	//	System.out.print(Global.opcodeFunctionalUnit.get(itr.opcode) + " ");
+		//	System.out.print(Global.opcodeFunctionalUnit.get(itr.opcode) + " ");
 		int cycles = Global.functionalUnitCycle.get(Global.opcodeFunctionalUnit.get(itr.opcode));
 		return cycles;
 	}
