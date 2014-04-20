@@ -27,9 +27,9 @@ class Instruction {
 		this.WAR = 'N';
 		this.StructHazard = 'N';
 		this.s = State.FT;
-		
+
 	}
-	
+
 	public Instruction(Instruction instr) {
 		this.label = instr.label;
 		this.opcode = instr.opcode;
@@ -44,11 +44,13 @@ class Instruction {
 		this.s = State.FT;
 		this.cycle = 1;
 	}
-	public String toString()
+	public String toString() 
 	{
-		return (this.label + "\t" + this.opcode  + "\t" + Arrays.asList(operands) + "\t" + this.IF + "\t" + this.ID + "\t" + this.EX + "\t" + this.WB + "\t" + this.s);
-	}		
-
+		if(this.operands != null)
+			return (this.label + "\t" + this.opcode  + "\t" + Arrays.asList(operands) + "\t" + this.IF + "\t" + this.ID + "\t" + this.EX + "\t" + this.WB);
+		else
+			return (this.label + "\t" + this.opcode  + "\t"  + this.IF + "\t" + this.ID + "\t" + this.EX + "\t" + this.WB);
+	}
 	void fetch(){
 		Global.functionalUnitStatus.put("Fetch", true);
 		if(this.cycle > 0)
@@ -61,7 +63,7 @@ class Instruction {
 		Global.functionalUnitStatus.put("Decode", true);
 		if(this.cycle > 0)
 			this.cycle -= 1;
-		
+
 	}
 
 	void writeBack(){
@@ -74,9 +76,10 @@ class Instruction {
 	State getNextIfFree(){
 		String key = null;
 		State next = this.s.getNext();
-		
+
 		if (next == null)
 		{
+	//		Global.functionalUnitStatus.put("WriteBack",false);
 			this.WB = Global.clockCycle;
 			return null;
 		}
@@ -85,13 +88,15 @@ class Instruction {
 		else if (next.equals(State.IDT))
 			key = "Decode";
 		else if (next.equals(State.EXT))
-			key = "IntegerUnit";
+			key = getKey(this);
 		else if (next.equals(State.WBT))
 			key = "WriteBack";
-
-		if (this.cycle == 0  && !Global.functionalUnitStatus.get(key)){
+	
+		if (this.cycle == 0 && !(Global.functionalUnitStatus.get(key))){
+//			String FU = getCurrentFunctionalUnit();
+//			Global.functionalUnitStatus.put(FU, false);
 			Global.functionalUnitStatus.put(key, true);
-		
+
 			if(this.s == State.FT)
 				this.IF = Global.clockCycle;
 			else if(this.s == State.IDT)
@@ -100,37 +105,60 @@ class Instruction {
 				this.EX = Global.clockCycle;
 			else if(this.s == State.WBT)
 				this.WB = Global.clockCycle;
-		
-			this.cycle = getCycles(next);
+
+			this.cycle = getCycles(this,next);
 			return next;
 		}
-		else
+		else {
 			return this.s;
-		
+		}
+
 	}
-	
-	
-	int getCycles(State s){
+
+	String getCurrentFunctionalUnit()
+	{
+		if(this.s == State.FT)
+				return "Fetch" ;
+		else if (this.s == State.IDT)
+			return "Decode";
+		else if (this.s == State.EXT)
+			return (getKey(this));
+		return null;
+	}
+	String getKey(Instruction itr)
+	{
+		System.out.println(itr.opcode);
+		String key = Global.opcodeFunctionalUnit.get(itr.opcode);
+		
+		return key;
+	}
+	int checkExecuteUnit(Instruction itr)
+	{
+	//	System.out.print(Global.opcodeFunctionalUnit.get(itr.opcode) + " ");
+		int cycles = Global.functionalUnitCycle.get(Global.opcodeFunctionalUnit.get(itr.opcode));
+		return cycles;
+	}
+
+	int getCycles(Instruction itr, State s){
 		if(s == State.FT)
 			return 1;
 		if (s.equals(State.EXT))
 		{
-		//	int numOfCycles = checkExecuteUnit(itr);
-			//return numOfCycles;
-			return 2;
+			int numOfCycles = checkExecuteUnit(itr);
+			return numOfCycles;
 		}
 		else if (s.equals(State.WBT))
 			return 1;
 		else
 			return 1;
 	}
-	
+
 	Instruction fetchNext(Instruction currInstr)
 	{
 
 		if(currInstr == null )
 			return null;
-		
+
 		Instruction nextInstr = null;
 
 		if(currInstr.opcode.equalsIgnoreCase("BNE"))
@@ -203,10 +231,10 @@ class Instruction {
 
 	void execute()
 	{
-		
-//		Global.functionalUnitStatus.put("IntegerUnit", true);
+
+		//		Global.functionalUnitStatus.put("IntegerUnit", true);
 		if(this.cycle > 0){
-			System.out.println("%%%%%%%%%%%%%%%%%" + this.cycle);
+
 			this.cycle -= 1;
 		}	
 
@@ -238,7 +266,7 @@ class Instruction {
 			int destValue = reg1Value + reg2Value;
 			String dest = this.operands[0];
 			Global.RegisterValuePair.put(dest, destValue);
-				}
+		}
 		else if(this.opcode.equalsIgnoreCase("DSUBI"))
 		{ 
 			System.out.println("*****************in DSUBI************");

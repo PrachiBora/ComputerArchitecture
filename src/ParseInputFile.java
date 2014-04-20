@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Set;
 
 class ParseInputFile
@@ -14,36 +15,81 @@ class ParseInputFile
 	{
 		try{
 
-			String sCurrentLine;
+			String sCurrentLine , temp;
 			br = new BufferedReader(new FileReader(instrFile));
-
 			while ((sCurrentLine = br.readLine()) != null)
 			{
 				Instruction ist = new Instruction();
-
-				String[] line = sCurrentLine.split("\\s");
-				ist.opcode = line[0];
-				if(ist.opcode.contains(":"))
+				if(sCurrentLine.contains(":"))
 				{
-					String[] opcodes = ist.opcode.split(":");
-					ist.label = opcodes[0];
-					ist.opcode = opcodes[1];
-
-				}
-				if(line.length > 1)
-				{
-					String operands = line[1];
-					if(operands != null)
-					{
-						String[] operand = operands.split(",");
-						ist.operands = operand;
-					}
+					ist.label = sCurrentLine.substring(0, sCurrentLine.indexOf(":"));
+					temp = sCurrentLine.substring(sCurrentLine.indexOf(":")+ 1,sCurrentLine.length());
 				}
 				else 
-					ist.operands = null;
+				{
+					ist.label = null;
+					temp = sCurrentLine;
+				}
+				
+				String[] tempArray = temp.split("\\s+");
+				ist.opcode = tempArray[0];
+				if(tempArray.length > 1)
+				{
+					String[] operands = tempArray[1].split(",");
+//					String[] processOpr;
+//					for (int i=0; i < operands.length; i++){
+//						processOpr[i] = 
+//					}
+					ist.operands = operands;
+				}
 				lds.functionalUnitForOpcode(ist.opcode);
 				Global.instruction.add(ist);
 			}
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+////				sCurrentLine = sCurrentLine.trim();
+//				if(sCurrentLine != null)
+//				{
+//					String [] line = sCurrentLine.split("\\s");
+//					ist.opcode = line[0].trim();
+//					if(ist.opcode.contains(":"))
+//					{
+//						String[] opcodes = ist.opcode.split(":");
+//						ist.label = opcodes[0];
+//						ist.opcode = opcodes[1];
+//
+//					}
+//					if(line.length > 1)
+//					{
+//						String operands = line[1];
+//						if(operands != null)
+//						{
+//							String[] operand = operands.split(",");
+//							ist.operands = operand;
+//						}
+//					}
+//					else 
+//						ist.operands = null;
+//					lds.functionalUnitForOpcode(ist.opcode);
+//					Global.instruction.add(ist);
+//				}
+//			}
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -63,7 +109,6 @@ class ParseInputFile
 		{
 			String line;
 			b = new BufferedReader(new FileReader(configFile));
-			int i = 0;
 			while((line = b.readLine()) != null)
 			{
 				if(line.equals(null))
